@@ -1,0 +1,22 @@
+#heading {
+    color: #4a4a4a;
+    font-family: pacifico;
+    cursor: default;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+#registry-photo {
+    width: 25%;
+    border-color: #d9c8b3;
+}
+
+#link-styling {
+    color: #7b68ee;
+    display: inline-block;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+}
+
+#link-styling:hover {
+    transform: scale(1.05);
+}
+

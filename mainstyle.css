@@ -1,0 +1,54 @@
+#nav-main {
+color: var(--bs-primary);
+    background: linear-gradient(90deg, var(--bs-primary), #da47cb 100%), rgb(254,254,254);
+    box-shadow: 1px 1px 5px var(--bs-navbar-hover-color);
+    font-family: pacifico;
+    font-size: large;
+}
+
+#home {
+color: var(--bs-light);
+font-size: 25px;
+}
+
+#pref {
+color: var(--bs-light);
+
+}
+
+#guess {
+color: var(--bs-light);
+margin-right: 50px;
+font-size: 22px;
+}
+
+#links {
+    color: var(--bs-light);
+    font-size: 22px;
+}
+
+a:link {
+    text-decoration: none;
+}
+
+#background {
+    background-color: #faf0e6;
+}
+
+.side-images {
+  width: 100px;
+  padding: 1rem 0;
+  background-color: transparent;
+}
+
+.side-images img {
+  width: 80px;
+  margin-bottom: 1rem;
+}
+
+.content-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: white;
+}

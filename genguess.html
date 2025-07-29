@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Guess the Gender</title>
+  <link rel="icon" type="image/x-icon" href="Photos/rattle.png">
+  <link rel="stylesheet" href="genguess.css" />
+  <link rel="stylesheet" href="mainstyle.css" />
+   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" 
+        integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" 
+        integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script> 
+        <!-- Firebase SDKs (compat versions for global firebase object) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Delius&family=Pacifico&display=swap" rel="stylesheet">
+
+</head>
+<body id="background">
+    <nav class="navbar navbar-expand-md bg-body py-3" id="nav-main">
+        <div class="container"> 
+            <a href="home.html" id="home">Untitled Baby Website</a>
+            <a class="navbar-brand d-flex align-items-center" href="#"></a>
+            <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navcol-3">
+                <span class="visually-hidden">Toggle navigation</span>
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div id="navcol-3" class="collapse navbar-collapse">
+                <ul class="navbar-nav mx-auto">
+                    <!--<li class="nav-item"><a class="nav-link active" href="pref.html" id="pref">Preferences</a></li>-->
+                    <li class="nav-item"><a class="nav-link" href="genguess.html" id="guess">Guess the Gender</a></li>
+                    <li class="nav-item"><a class="nav-link" href="links.html" id="links">Links</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+  <div class="text-center p-4 p-lg-5" >
+    <p class="fw-bold text-primary mb-2" style="font-family: pacifico;">It's Time to Guess...</p>
+    <h1 class="fw-bold mb-4" style="font-family: pacifico;">Are They a Boy or a Girl?</h1>
+
+    <button class="btn btn-light fs-5 me-3 px-4 py-2" id="boy-button" type="button">Boy</button>
+    <button class="btn btn-light fs-5 ms-1 px-4 py-2" id="girl-button" type="button">Girl</button>
+  </div>
+
+  <div class="collapse mx-auto" id="collapseform" style="width: 95%; font-family: delius;">
+    <div class="card card-body">
+      <form id="vote-form">
+        <input type="hidden" id="selected-gender" name="gender">
+
+        <div class="mb-3">
+          <label class="form-label">First Name</label>
+          <input type="text" class="form-control" id="first-name" placeholder="e.g. John" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Last Name</label>
+          <input type="text" class="form-control" id="last-name" placeholder="e.g. Doe" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" id="email" required>
+        </div>
+        <button type="submit" class="btn btn-success">Submit Vote</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="text-center mt-4" id="thank-you" style="display: none">
+    <h4>Thank you for participating!</h4>
+  </div>
+  <div class="container" >
+    <canvas id="voteChart" class="mx-auto d-block"></canvas>
+  </div>
+  <script> 
+    document.addEventListener('DOMContentLoaded', () => {
+      let chart;
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyDeBHGjPVCxwuyJb3ToPhw9pGGdGubaYWE",
+        authDomain: "babygendervotes.firebaseapp.com",
+        projectId: "babygendervotes",
+        storageBucket: "babygendervotes.firebasestorage.app",
+        messagingSenderId: "275042987898",
+        appId: "1:275042987898:web:a7e78add44f8524ddf30c3",
+        measurementId: "G-KCW1X1WLH6"
+      };
+
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+      
+      let hasVoted = false;
+
+      const boyBtn = document.getElementById('boy-button');
+      const girlBtn = document.getElementById('girl-button');
+      const collapseForm = document.getElementById('collapseform');
+      const selectedGenderInput = document.getElementById('selected-gender');
+      const voteForm = document.getElementById('vote-form');
+      const thankYouMessage = document.getElementById('thank-you');
+
+      function showForm(gender) {
+        if (hasVoted) return;
+
+        selectedGenderInput.value = gender;
+        collapseForm.classList.add('show');
+
+        if (gender === 'Boy') {
+            // Style Boy as selected
+          boyBtn.classList.add('btn-primary');
+          boyBtn.classList.remove('btn-light', 'greyed-out');
+
+            // Grey out Girl (but keep it clickable)
+          girlBtn.classList.remove('btn-primary');
+          girlBtn.classList.add('greyed-out');
+        } 
+        else {
+            // Style Girl as selected
+          girlBtn.classList.add('btn-primary');
+          girlBtn.classList.remove('btn-light', 'greyed-out');
+
+            // Grey out Boy (but keep it clickable)
+          boyBtn.classList.remove('btn-primary');
+          boyBtn.classList.add('greyed-out');
+        }
+      }
+
+        boyBtn.addEventListener('click', () => showForm('Boy'));
+        girlBtn.addEventListener('click', () => showForm('Girl'));
+
+        voteForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+            const gender = selectedGenderInput.value;
+              if (!gender) {
+                alert("Please select a gender before submitting.");
+                return;
+              }
+
+            hasVoted = true;
+            const fName = document.getElementById('first-name').value;
+            const lName = document.getElementById('last-name').value;
+            const email = document.getElementById('email').value;
+
+            try {
+              await db.collection("votes").add({
+                firstName: fName,
+                lastName: lName,
+                email: email,
+              gender: gender,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+              });
+            } 
+            catch (error) {
+              console.error("Error saving vote:", error);
+              alert("There was an error submitting your vote. Please try again.");
+              return; // Stop further execution if vote fails
+            }
+
+            // Continue with UI updates and chart refresh
+          collapseForm.classList.remove('show');
+          voteForm.reset();
+          thankYouMessage.style.display = 'block';
+
+          boyBtn.disabled = true;
+          girlBtn.disabled = true;
+
+          if (gender === 'Boy') {
+            girlBtn.classList.remove('btn-primary', 'btn-light');
+            girlBtn.classList.add('greyed-out');
+          } 
+          else {
+            boyBtn.classList.remove('btn-primary', 'btn-light');
+            boyBtn.classList.add('greyed-out');
+          }
+          try {
+            const updatedCounts = await fetchVotes();
+            updateChart(updatedCounts);
+          } 
+          catch (error) {
+            console.error("Error updating chart:", error);
+            // Optional: show a non-blocking message if chart fails
+          }
+        });
+
+      async function fetchVotes() {
+        const snapshot = await db.collection("votes").get();
+        const counts = { Boy: 0, Girl: 0 };
+
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          if (data.gender === "Boy") counts.Boy++;
+          else if (data.gender === "Girl") counts.Girl++;
+        });
+
+        return counts;
+      }
+
+      fetchVotes().then(counts => {
+        const totalVotes = counts.Boy + counts.Girl;
+        const boyPercent = totalVotes ? Number(((counts.Boy / totalVotes) * 100).toFixed(1)) : 0;
+        const girlPercent = totalVotes ? Number(((counts.Girl / totalVotes) * 100).toFixed(1)) : 0;
+
+        const ctx = document.getElementById('voteChart').getContext('2d');
+
+        chart = new Chart(ctx, {
+          type: 'pie',
+          data: {
+            labels: [`Boy (${boyPercent}%)`, `Girl (${girlPercent}%)`],
+            datasets: [{
+              data: [boyPercent, girlPercent],
+              backgroundColor: ['#0d6efd', '#da47cb']
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: 'bottom'
+              },
+              title: {
+                display: true,
+                text: 'Gender Vote Distribution'
+              }
+            }
+          }
+        });
+      });
+
+      function updateChart(counts) {
+        const totalVotes = counts.Boy + counts.Girl;
+        const boyPercent = totalVotes ? Number(((counts.Boy / totalVotes) * 100).toFixed(1)) : 0;
+        const girlPercent = totalVotes ? Number(((counts.Girl / totalVotes) * 100).toFixed(1)) : 0;
+
+        if (chart) {
+            // Update existing chart
+          chart.data.labels = [`Boy (${boyPercent}%)`, `Girl (${girlPercent}%)`];
+          chart.data.datasets[0].data = [boyPercent, girlPercent];
+          chart.update();
+        } 
+        else {
+          // Create chart for the first time
+          const ctx = document.getElementById('voteChart').getContext('2d');
+          chart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+              labels: [`Boy (${boyPercent}%)`, `Girl (${girlPercent}%)`],
+              datasets: [{
+                data: [boyPercent, girlPercent],
+                backgroundColor: ['#0d6efd', '#da47cb']
+              }]
+            },
+            options: {
+            responsive: true,
+              plugins: {
+                legend: {
+                  position: 'bottom'
+                },
+                title: {
+                  display: true,
+                  text: 'Gender Vote Distribution'
+                }
+              }
+            }
+          });
+        }
+      }
+    });
+  </script>
+</body>
+</html>

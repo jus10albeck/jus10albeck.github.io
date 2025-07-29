@@ -1,0 +1,37 @@
+#boy-button {
+    background: #0d6efd;
+    color: rgb(255,255,255);
+    box-shadow: 1px 1px 5px var(--bs-secondary-color);
+    border: hidden;
+    font-family: delius;
+}
+
+#boy-button:hover {
+    filter: brightness(1.5);
+    transform: scale(1.1);
+}
+
+#girl-button {
+background: #da47cb;
+color: rgb(255,255,255);
+box-shadow: 1px 1px 5px var(--bs-secondary-color);
+border:hidden;
+font-family: delius;
+}
+
+#girl-button:hover {
+    filter: brightness(1.5);
+    transform: scale(1.1);
+}
+
+button:disabled {
+    opacity: 0.1;
+    cursor: not-allowed;
+}
+
+.greyed-out {
+    background-color: #d3d3d3 !important;
+    color: #888 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
